@@ -7,4 +7,4 @@ These projects were mostly done to improve my SQL and data analysis skills.
 
 NBA Dataset: https://www.kaggle.com/datasets/wyattowalsh/basketball
 
-[[https://www.kaggle.com/datasets/anth7310/mental-health-in-the-tech-industry | Mental Health in Tech Dataset ]]
+Mental Health in Tech Dataset  : https://www.kaggle.com/datasets/anth7310/mental-health-in-the-tech-industry
