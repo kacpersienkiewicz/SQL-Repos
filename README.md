@@ -1,7 +1,7 @@
 # SQL-Repos
 This is just a repository for all of my projects that query sql databses using the sqlite3 module in Python.
 
-These projects were mostly done to improve my SQL and data analysis skills.
+These projects were mostly done to improve my SQL and data analysis skills. Specifically, I wanted to work on Joins, Group By, Having, and Set Operations like Union.
 
 ## NBA Dataset Abstract
 
