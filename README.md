@@ -3,6 +3,10 @@ This is just a repository for all of my projects that query sql databses using t
 
 These projects were mostly done to improve my SQL and data analysis skills. Specifically, I wanted to work on Joins, Group By, Having, and Set Operations like Union.
 
+## SQLExperimentation
+
+This uses the same dataset as the NBA Dataset Analysis, but is meant to just be practice for various SQL commands.
+
 ## NBA Dataset Abstract
 
 This analysis is meant to look at how team statistiscs, like total points and rebounds, changed over time. Additionally, I wanted to look at how a draft prospect's position, weight and height changed. Basically, I will look at a player's weight, height and position during the draft and compare it to the same things in the current season.
