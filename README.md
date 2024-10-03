@@ -15,8 +15,14 @@ This analysis is meant to look at how team statistiscs, like total points and re
 
 This analysis is meant to look at the demographics of the survey and to find any correlations between openness of mental health, such as speaking about it with a coworker, and certain aspects of a business like size and whether they provide mental healthcare as part of their employer provided health insurance.
 
+## SF Salaries
+
+This aanalysis looks at the salaries of San Francisco city employees, specifically looking at how compensation is distributed both within and between groups of employees.
+
 # Credit
 
 NBA Dataset: https://www.kaggle.com/datasets/wyattowalsh/basketball
 
 Mental Health in Tech Dataset  : https://www.kaggle.com/datasets/anth7310/mental-health-in-the-tech-industry
+
+SF Salaries: https://www.kaggle.com/datasets/kaggle/sf-salaries/data
