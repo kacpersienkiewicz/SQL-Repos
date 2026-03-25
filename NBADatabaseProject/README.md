@@ -1,7 +1,7 @@
 # NBA Analysis
 
 This project is made up of several pieces:
-* NBAFunctions.py - This contains functions related to calculating statistics such as (PER)[https://www.basketball-reference.com/about/per.html]
+* NBAFunctions.py - This contains functions related to calculating statistics such as [PER](https://www.basketball-reference.com/about/per.html)
 * NBADBAnalysis.ipynb - The first simple analysis that was done to just understand the dataset.
 ** TableAndColNames.txt - A text file containing all of the columns by table for the sqlite file, created as part of NBADBAnalysis.ipynb
 * NBATeamOverTimeAnalysis.ipynb - An Analysis of each NBA team, trying to categorize different eras of the team.
