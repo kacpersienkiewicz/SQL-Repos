@@ -1,3 +1,14 @@
+'''
+This file has two functions:
+* import all needed modules so just this file can be imported
+* create a bunch of helper functions for analysis, mainly for calculating advanced stats like PER
+
+'''
+import sqlite3 as sql
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 def get_uPER(player_stats, team_stats, league_stats):
     '''
