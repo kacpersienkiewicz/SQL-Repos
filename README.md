@@ -1,5 +1,5 @@
 # SQL-Repos
-This is just a repository for all of my projects that query sql databses using the sqlite3 module in Python.
+This is just a repository for all of my projects that query sql databases using the sqlite3 module in Python.
 
 These projects were mostly done to improve my SQL and data analysis skills. Specifically, I wanted to work on Joins, Group By, Having, and Set Operations like Union.
 
@@ -10,7 +10,7 @@ This uses the same dataset as the NBA Dataset Analysis, but is meant to just be 
 ## NBA Dataset Abstract
 
 ### Initial Analysis
-This analysis is meant to look at how team statistiscs, like total points and rebounds, changed over time. Additionally, I wanted to look at how a draft prospect's position, weight and height changed. Basically, I will look at a player's weight, height and position during the draft and compare it to the same things in the current season. Most of the second half of the project is deidcated to looking at the height/weight distribution of the different positions.
+This analysis is meant to look at how team statistics, like total points and rebounds, changed over time. Additionally, I wanted to look at how a draft prospect's position, weight and height changed. Basically, I will look at a player's weight, height and position during the draft and compare it to the same things in the current season. Most of the second half of the project is dedicated to looking at the height/weight distribution of the different positions.
 
 ### Part Two
 After the initial analysis, the plan is to create a dashboard based on some findings about the NBA after analyzing players, teams, and the general initial analysis. This will also include creating functions to find statistics such as PER.
@@ -21,7 +21,7 @@ This analysis is meant to look at the demographics of the survey and to find any
 
 ## SF Salaries
 
-This aanalysis looks at the salaries of San Francisco city employees, specifically looking at how compensation is distributed both within and between groups of employees, as well as between the different years. The data spans from 2011 to 2014, and as I went through the data and did a bit of research outside of it, 2011 was an outlier since the city was hit by budget cuts. This makes it an interesting comparison poin, that I touch upon several times in the project.
+This analysis looks at the salaries of San Francisco city employees, specifically looking at how compensation is distributed both within and between groups of employees, as well as between the different years. The data spans from 2011 to 2014, and as I went through the data and did a bit of research outside of it, 2011 was an outlier since the city was hit by budget cuts. This makes it an interesting comparison poin, that I touch upon several times in the project.
 
 # Credit
 
