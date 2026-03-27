@@ -1,0 +1,1 @@
+This directory contains a set of five graphs for each team, providing a general overview of each team. Quite a bit of data is missing until the 1970's, partly because some stats weren't tracked until then and partly because the SQLite database is missing the data.
