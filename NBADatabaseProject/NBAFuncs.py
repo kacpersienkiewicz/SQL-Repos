@@ -136,8 +136,56 @@ def calc_lg_aPER():
 # #################################################################################################################################################################################
 #  Graphing Functions
 # #################################################################################################################################################################################
+def create_save_team_graph_differences(LeagueDF, TeamDF, teamName):
+    # Uses the league and team dataframes created by get_league_stats and get_team_stats to create graphs of the team's stats compared to the league average. 
+    # Saving the data as a difference of League and Team Data makes it easier to compare how the team is doing to the average.
+    # Then it saves the figure into a folder within the directory to avoid issues from the big dataframes being loaded into memory. 
+    # I was having issues with the IDE and IPython handling the workspace so I made this
+    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(nrows = 5, ncols = 1, figsize=(15,30))
+    ax1.set_title(f"{teamName} Points by Season")
+    ax1.grid('both', 'both')
+    ax1.tick_params("x", rotation=45)
+    ax1.plot(TeamDF.index, TeamDF["Team Points"] - LeagueDF["League Points"], label="Difference between Team Points and League Average", marker='o')
+    ax1.plot(TeamDF.index, TeamDF["Team Plus Minus"], c='red', marker='x', label="Team Plus Minus")
+    ax1.legend()
+
+    ax2.set_title(f"Difference between League and {teamName} Assists by Season")
+    ax2.tick_params("x", rotation=45)
+    ax2.grid('both', 'both')
+    ax2.plot(TeamDF.index, TeamDF["Team Assists"] - LeagueDF["League Assists"], marker='o')
+
+    ax3.set_title(f"Difference between League and {teamName} Rebounds by Season")
+    ax3.tick_params("x", rotation=45)
+    ax3.grid('both', 'both')
+    ax3.plot(TeamDF.index, TeamDF["Team Offensive Rebounds"] - LeagueDF["League Offensive Rebounds"], color='red', marker='o', label="Offensive Rebounds")
+    ax3.plot(TeamDF.index, TeamDF["Team Defensive Rebounds"] - LeagueDF["League Defensive Rebounds"], color='green', marker='o', label="Defensive Rebounds")
+    ax3.legend()
+
+    ax4.set_title(f"Difference between League and {teamName} Miscellaneous Stats by Season")
+    ax4.tick_params("x", rotation=45)
+    ax4.grid('both', 'both')
+    ax4.plot(TeamDF.index, TeamDF["Team Steals"] - LeagueDF["League Steals"], c='red', label="Steals", marker='o')
+    ax4.plot(TeamDF.index, TeamDF["Team Blocks"] - LeagueDF["League Blocks"], c='green', label="Blocks", marker='o')
+    ax4.plot(TeamDF.index, TeamDF["Team Turnovers"] - LeagueDF["League Turnovers"], c='black', label="Turnovers", marker='o')
+    ax4.plot(TeamDF.index, TeamDF["Team Personal Fouls"] - LeagueDF["League Personal Fouls"], c='brown', label="Fouls", marker='o')
+    ax4.legend()
+
+    ax5.set_title(f"Difference between League and {teamName} Shooting Stats by Season")
+    ax5.tick_params("x", rotation=45)
+    ax5.grid('both', 'both')
+    ax5.plot(TeamDF.index, TeamDF["Team Field Goals Attempted"] - LeagueDF["League"], c='red', label="FGA", marker='o')
+    ax5.plot(TeamDF.index, TeamDF["Team Field Goals Made"] - LeagueDF["League"], c='red', label="FGM", marker='x', linestyle='--')
+    ax5.plot(TeamDF.index, TeamDF["Team Free Throws Attempted"] - LeagueDF["League"], c='green', label="FTA", marker='o')
+    ax5.plot(TeamDF.index, TeamDF["Team Free Throws Made"] - LeagueDF["League"], c='green', label="FTM", marker='x', linestyle='--')
+    ax5.plot(TeamDF.index, TeamDF["Team 3-pt Field Goals Attempted"] - LeagueDF["League"], c='blue', label="FG3A", marker='o')
+    ax5.plot(TeamDF.index, TeamDF["Team 3-pt Field Goals Made"] - LeagueDF["League"], c='blue', label="FG3M", marker='x', linestyle='--')
+    ax5.legend()
+
+    plt.savefig(fname=f'Graphs//{teamName}.png',format='png')
+
 def create_save_team_graph(LeagueDF, TeamDF, teamName):
-    # Uses the league and team dataframes created by get_league_stats and get_team_stats to create graphs of the team's stats compared to the league average
+    # Compared to create_save_team_graph_differences, this version does not include the differences of league/opponent and team stats.
+    # This makes it easier to find the absolute optima of statistics, although its readability suffers.
     # Then it saves the figure into a folder within the directory to avoid issues from the big dataframes being loaded into memory. 
     # I was having issues with the IDE and IPython handling the workspace so I made this
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(nrows = 5, ncols = 1, figsize=(15,30))
@@ -145,32 +193,40 @@ def create_save_team_graph(LeagueDF, TeamDF, teamName):
     ax1.grid('both', 'both')
     ax1.tick_params("x", rotation=45)
     ax1.plot(TeamDF.index, TeamDF["Team Points"], label="Team Points", marker='o')
+    ax1.plot(TeamDF.index, LeagueDF["League Points"], label="Average League Points", color='black', marker='+')
     ax1.plot(TeamDF.index, TeamDF["Team Points"] - TeamDF["Team Plus Minus"], c='red', marker='x', label="Opponent's Points")
-    ax1.plot(TeamDF.index, LeagueDF["League Points"].loc[TeamDF.index], c='black', marker='+', label="League Average Points")
     ax1.legend()
 
-    ax2.set_title(f"{teamName} Assists by Season")
+    ax2.set_title(f"Difference between League and {teamName} Assists by Season")
     ax2.tick_params("x", rotation=45)
     ax2.grid('both', 'both')
-    ax2.plot(TeamDF.index, TeamDF["Team Assists"], marker='o')
+    ax2.plot(TeamDF.index, TeamDF["Team Assists"] - LeagueDF["League Assists"], marker='o')
+    ax2.plot(TeamDF.index, LeagueDF["League Assists"], label="Average League Assists", color='black', marker='+')
 
-    ax3.set_title(f"{teamName} Rebounds by Season")
+    ax3.set_title(f"Difference between League and {teamName} Rebounds by Season")
     ax3.tick_params("x", rotation=45)
     ax3.grid('both', 'both')
-    ax3.bar(TeamDF.index, TeamDF["Team Offensive Rebounds"], bottom=TeamDF["Team Defensive Rebounds"], color='red', label="Offensive Rebounds")
-    ax3.bar(TeamDF.index, TeamDF["Team Defensive Rebounds"], color='green', label="Defensive Rebounds")
+    ax3.plot(TeamDF.index, TeamDF["Team Offensive Rebounds"], color='red', marker='o', label="Offensive Rebounds")
+    ax3.plot(TeamDF.index, TeamDF["Team Defensive Rebounds"], color='green', marker='o', label="Defensive Rebounds")
+    ax1.plot(TeamDF.index, LeagueDF["League Offensive Rebounds"], label="Average League Points", color='red', marker='+')
+    ax1.plot(TeamDF.index, LeagueDF["League Defensive Rebounds"], label="Average League Points", color='green', marker='+')
     ax3.legend()
 
-    ax4.set_title(f"{teamName} Miscellaneous Stats by Season")
+    ax4.set_title(f"Difference between League and {teamName} Miscellaneous Stats by Season")
     ax4.tick_params("x", rotation=45)
     ax4.grid('both', 'both')
     ax4.plot(TeamDF.index, TeamDF["Team Steals"], c='red', label="Steals", marker='o')
     ax4.plot(TeamDF.index, TeamDF["Team Blocks"], c='green', label="Blocks", marker='o')
     ax4.plot(TeamDF.index, TeamDF["Team Turnovers"], c='black', label="Turnovers", marker='o')
     ax4.plot(TeamDF.index, TeamDF["Team Personal Fouls"], c='brown', label="Fouls", marker='o')
+    ax4.plot(TeamDF.index, LeagueDF["League Steals"], c='red', label="Steals", marker='+')
+    ax4.plot(TeamDF.index, LeagueDF["League Blocks"], c='green', label="Blocks", marker='+')
+    ax4.plot(TeamDF.index, LeagueDF["League Turnovers"], c='black', label="Turnovers", marker='+')
+    ax4.plot(TeamDF.index, LeagueDF["League Personal Fouls"], c='brown', label="Fouls", marker='+')
     ax4.legend()
 
-    ax5.set_title(f"{teamName} Shooting Stats by Season")
+    # Decided not to add league stats to ax5 since ax4 was already pretty crowded.
+    ax5.set_title(f"Difference between League and {teamName} Shooting Stats by Season")
     ax5.tick_params("x", rotation=45)
     ax5.grid('both', 'both')
     ax5.plot(TeamDF.index, TeamDF["Team Field Goals Attempted"], c='red', label="FGA", marker='o')
