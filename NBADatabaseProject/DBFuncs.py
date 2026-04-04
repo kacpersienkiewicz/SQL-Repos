@@ -10,9 +10,7 @@ import numpy as np
 con = sql.connect("Data/nba.sqlite")
 cur = con.cursor()
 
-def get_league_stats(con, season_type):
-    # The season is determined by the year it started. For example, the 1973-1974 season is input as 1973.
-    # season, lg_pts, lg_ast, lg_trb, lg_orb, lg_drb, lg_stl, lg_blk, lg_tov, lg_pf, lg_fga, lg_fgm, lg_fg3a, lg_fg3m, lg_fta, lg_ftm = league_stats
+def get_league_stats(con):
     query =f"""SELECT SUBSTRING(season_id,2,5) as Season,
         AVG(pts_home + pts_away) / 2 as lg_pts, 
         AVG(reb_home + reb_away) / 2 as lg_treb,
@@ -30,12 +28,96 @@ def get_league_stats(con, season_type):
         AVG(fta_home + fta_away) / 2 as lg_fta, 
         AVG(ftm_home + ftm_away) / 2 as lg_ftm 
         FROM game
-        WHERE season_type = {season_type} AND Season >= '1996'
+        WHERE season_type = 'Regular Season' AND Season >= '1996'
         GROUP BY Season"""
     dataframe = pd.read_sql_query(query, con, index_col="Season")
     return dataframe
 
-def get_team_stats(con, team, season_type):
+def get_team_stats(con, team, team_abb):
+    # This function looks a bit complex but it just prepends the team abbreviation to each stat instead of tm so that it is easier to concatenate all of the stats into one csv for Tableau.
+    # The next function does not do those so the query looks a bit cleaner.
+    query = f"""SELECT Season, {team_abb}_mp, {team_abb}_gp, {team_abb}_losses, {team_abb}_wins, {team_abb}_pts, {team_abb}_ast, {team_abb}_treb, {team_abb}_oreb, {team_abb}_dreb, {team_abb}_stl, {team_abb}_blk, {team_abb}_tov, {team_abb}_pf, {team_abb}_fga, {team_abb}_fgm, {team_abb}_fg_pct, {team_abb}_fg3a, {team_abb}_fg3m,
+        {team_abb}_fg3_pct, {team_abb}_fta, {team_abb}_ftm, {team_abb}_ft_pct, {team_abb}_pm, {team_abb}_pts_paint, {team_abb}_pts_2nd_chance, {team_abb}_pts_fb, {team_abb}_pts_off_tov, {team_abb}_opp_pts, {team_abb}_opp_ast, {team_abb}_opp_treb, {team_abb}_opp_oreb, {team_abb}_opp_dreb, {team_abb}_opp_stl, {team_abb}_opp_blk,
+        {team_abb}_opp_tov, {team_abb}_opp_pf, {team_abb}_opp_fga, {team_abb}_opp_fgm, {team_abb}_opp_fg_pct, {team_abb}_opp_fg3a, {team_abb}_opp_fg3m, {team_abb}_opp_fg3_pct, {team_abb}_opp_fta, {team_abb}_opp_ftm, {team_abb}_opp_ft_pct, {team_abb}_opp_pm, {team_abb}_opp_pts_paint, {team_abb}_opp_pts_2nd_chance, {team_abb}_opp_pts_fb, {team_abb}_opp_pts_off_tov,
+        {team_abb}_poss, {team_abb}_opp_poss,
+        100 / ({team_abb}_poss + {team_abb}_opp_poss) * {team_abb}_pts as {team_abb}_ORtg,
+        100 / ({team_abb}_poss + {team_abb}_opp_poss) * {team_abb}_opp_pts as {team_abb}_DRtg,
+        48 * (({team_abb}_poss + {team_abb}_opp_poss) / (2 * {team_abb}_mp /5)) as {team_abb}_pace,
+        {team_abb}_ast_pct, {team_abb}_ast_tov_ratio, {team_abb}_ast_ratio, {team_abb}_oreb_pct, {team_abb}_dreb_pct, {team_abb}_treb_pct, {team_abb}_tov_ratio, {team_abb}_efg_pct, {team_abb}_ts_pct
+        FROM(SELECT Season, {team_abb}_mp, {team_abb}_gp, {team_abb}_losses, {team_abb}_wins, {team_abb}_pts, {team_abb}_ast, {team_abb}_treb, {team_abb}_oreb, {team_abb}_dreb, {team_abb}_stl, {team_abb}_blk, {team_abb}_tov, {team_abb}_pf, {team_abb}_fga, {team_abb}_fgm, {team_abb}_fg_pct, {team_abb}_fg3a, {team_abb}_fg3m,
+        {team_abb}_fg3_pct, {team_abb}_fta, {team_abb}_ftm, {team_abb}_ft_pct, {team_abb}_pm, {team_abb}_pts_paint, {team_abb}_pts_2nd_chance, {team_abb}_pts_fb, {team_abb}_pts_off_tov, {team_abb}_opp_pts, {team_abb}_opp_ast, {team_abb}_opp_treb, {team_abb}_opp_oreb, {team_abb}_opp_dreb, {team_abb}_opp_stl, {team_abb}_opp_blk,
+        {team_abb}_opp_tov, {team_abb}_opp_pf, {team_abb}_opp_fga, {team_abb}_opp_fgm, {team_abb}_opp_fg_pct, {team_abb}_opp_fg3a, {team_abb}_opp_fg3m, {team_abb}_opp_fg3_pct, {team_abb}_opp_fta, {team_abb}_opp_ftm, {team_abb}_opp_ft_pct, {team_abb}_opp_pm, {team_abb}_opp_pts_paint, {team_abb}_opp_pts_2nd_chance, {team_abb}_opp_pts_fb, {team_abb}_opp_pts_off_tov,
+        0.5 * (({team_abb}_fga + 0.4 + {team_abb}_fta - 1.07 * ({team_abb}_oreb / ({team_abb}_oreb + {team_abb}_opp_dreb)) * ({team_abb}_fga - {team_abb}_fgm) + {team_abb}_tov) + ({team_abb}_opp_fga + 0.4 * {team_abb}_opp_fta - 1.07 * ({team_abb}_opp_oreb / ({team_abb}_opp_oreb + {team_abb}_dreb)) * ({team_abb}_opp_fga - {team_abb}_opp_fgm) + {team_abb}_opp_tov)) as {team_abb}_poss,
+        0.5 * (({team_abb}_opp_fga + 0.4 + {team_abb}_opp_fta - 1.07 * ({team_abb}_opp_oreb / ({team_abb}_opp_oreb + {team_abb}_dreb)) * ({team_abb}_opp_fga - {team_abb}_opp_fgm) + {team_abb}_opp_tov) + ({team_abb}_fga + 0.4 * {team_abb}_fta - 1.07 * ({team_abb}_oreb / ({team_abb}_oreb + {team_abb}_opp_dreb)) * ({team_abb}_fga - {team_abb}_fgm) + {team_abb}_tov)) as {team_abb}_opp_poss,
+        {team_abb}_ast / {team_abb}_fgm * 100 as {team_abb}_ast_pct,
+        {team_abb}_ast / {team_abb}_tov as {team_abb}_ast_tov_ratio,
+        100 * {team_abb}_ast / ({team_abb}_fga + 0.44 * {team_abb}_fta + {team_abb}_ast + {team_abb}_tov) as {team_abb}_ast_ratio,
+        100 * ({team_abb}_oreb * ({team_abb}_mp / 5)) / ({team_abb}_mp * ({team_abb}_oreb + {team_abb}_opp_dreb)) as {team_abb}_oreb_pct,
+        100 * ({team_abb}_dreb * ({team_abb}_mp / 5)) / ({team_abb}_mp * ({team_abb}_dreb + {team_abb}_opp_oreb)) as {team_abb}_dreb_pct,
+        100 * ({team_abb}_treb * ({team_abb}_mp / 5)) / ({team_abb}_mp * ({team_abb}_treb + {team_abb}_opp_treb)) as {team_abb}_treb_pct,
+        100 * {team_abb}_tov / ({team_abb}_fga + 0.44 * {team_abb}_fta + {team_abb}_tov) as {team_abb}_tov_ratio,
+        ({team_abb}_fgm + 0.5 * {team_abb}_fg3m) / {team_abb}_fga as {team_abb}_efg_pct,
+        {team_abb}_pts / (2 * ({team_abb}_fga + 0.44 * {team_abb}_fta)) as {team_abb}_ts_pct
+        FROM(SELECT SUBSTRING(g.season_id,2,5) AS Season, SUM(g.min) AS {team_abb}_mp,
+        COUNT(CASE WHEN (g.team_abbreviation_home IN {team} OR g.team_abbreviation_away IN {team}) THEN g.game_date END) AS {team_abb}_gp,
+        COUNT(CASE WHEN g.team_abbreviation_home IN {team} AND g.wl_home = 'L' THEN g.wl_home WHEN g.team_abbreviation_away IN {team} AND g.wl_away = 'L' THEN g.wl_away END) AS {team_abb}_losses,
+        COUNT(CASE WHEN g.team_abbreviation_home IN {team} AND g.wl_home = 'W' THEN g.wl_home WHEN g.team_abbreviation_away IN {team} AND g.wl_away = 'W' THEN g.wl_away END) AS {team_abb}_wins,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.pts_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.pts_away) END AS {team_abb}_pts,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.ast_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.ast_away) END AS {team_abb}_ast,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.reb_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.reb_away) END AS {team_abb}_treb,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.oreb_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.oreb_away) END AS {team_abb}_oreb,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.dreb_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.dreb_away) END AS {team_abb}_dreb,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.stl_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.stl_away) END AS {team_abb}_stl,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.blk_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.blk_away) END AS {team_abb}_blk,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.tov_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.tov_away) END AS {team_abb}_tov,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.pf_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.pf_away) END AS {team_abb}_pf,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fga_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fga_away) END AS {team_abb}_fga,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fgm_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fgm_away) END AS {team_abb}_fgm,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fg_pct_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fg_pct_away) END AS {team_abb}_fg_pct,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fg3a_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fg3a_away) END AS {team_abb}_fg3a,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fg3m_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fg3m_away) END AS {team_abb}_fg3m,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fg3_pct_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fg3_pct_away) END AS {team_abb}_fg3_pct,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fta_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fta_away) END AS {team_abb}_fta,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.ftm_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.ftm_away) END AS {team_abb}_ftm,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.ft_pct_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.ft_pct_away) END AS {team_abb}_ft_pct,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.plus_minus_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.plus_minus_away) END AS {team_abb}_pm,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(o.pts_paint_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(o.pts_paint_away) END AS {team_abb}_pts_paint,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(o.pts_2nd_chance_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(o.pts_2nd_chance_away) END AS {team_abb}_pts_2nd_chance,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(o.pts_fb_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(o.pts_fb_away) END AS {team_abb}_pts_fb,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(o.pts_off_to_home) WHEN g.team_abbreviation_away IN {team} THEN AVG(o.pts_off_to_away) END AS {team_abb}_pts_off_tov,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.pts_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.pts_home) END AS {team_abb}_opp_pts,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.ast_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.ast_home) END AS {team_abb}_opp_ast,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.reb_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.reb_home) END AS {team_abb}_opp_treb,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.oreb_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.oreb_home) END AS {team_abb}_opp_oreb,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.dreb_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.dreb_home) END AS {team_abb}_opp_dreb,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.stl_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.stl_home) END AS {team_abb}_opp_stl,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.blk_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.blk_home) END AS {team_abb}_opp_blk,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.tov_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.tov_home) END AS {team_abb}_opp_tov,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.pf_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.pf_home) END AS {team_abb}_opp_pf,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fga_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fga_home) END AS {team_abb}_opp_fga,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fgm_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fgm_home) END AS {team_abb}_opp_fgm,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fg_pct_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fg_pct_home) END AS {team_abb}_opp_fg_pct,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fg3a_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fg3a_home) END AS {team_abb}_opp_fg3a,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fg3m_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fg3m_home) END AS {team_abb}_opp_fg3m,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fg3_pct_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fg3_pct_home) END AS {team_abb}_opp_fg3_pct,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.fta_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.fta_home) END AS {team_abb}_opp_fta,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.ftm_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.ftm_home) END AS {team_abb}_opp_ftm,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.ft_pct_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.ft_pct_home) END AS {team_abb}_opp_ft_pct,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(g.plus_minus_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(g.plus_minus_home) END AS {team_abb}_opp_pm,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(o.pts_paint_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(o.pts_paint_home) END AS {team_abb}_opp_pts_paint,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(o.pts_2nd_chance_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(o.pts_2nd_chance_home) END AS {team_abb}_opp_pts_2nd_chance,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(o.pts_fb_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(o.pts_fb_home) END AS {team_abb}_opp_pts_fb,
+        CASE WHEN g.team_abbreviation_home IN {team} THEN AVG(o.pts_off_to_away) WHEN g.team_abbreviation_away IN {team} THEN AVG(o.pts_off_to_home) END AS {team_abb}_opp_pts_off_tov
+        FROM game as g
+        JOIN other_stats as o
+        ON g.game_id = o.game_id
+        WHERE g.season_type = 'Regular Season' AND Season >= '1996' AND (g.team_abbreviation_home IN {team} OR g.team_abbreviation_away IN {team})
+        GROUP BY Season))"""
+    dataframe = pd.read_sql_query(query, con, index_col="Season")
+    return dataframe
+
+def get_team_stats_simple(con, team, season_type):
+    # This was the earlier version of the above function that is much simpler. It does not give unique names to colums because the dataframes didn't need to be concatenated for SQLite.
     query = f"""SELECT Season, mp, gp, losses, wins, tm_pts, tm_ast, tm_treb, tm_oreb, tm_dreb, tm_stl, tm_blk, tm_tov, tm_pf, tm_fga, tm_fgm, tm_fg_pct, tm_fg3a, tm_fg3m,
         tm_fg3_pct, tm_fta, tm_ftm, tm_ft_pct, tm_pm, tm_pts_paint, tm_pts_2nd_chance, tm_pts_fb, tm_pts_off_tov, opp_pts, opp_ast, opp_treb, opp_oreb, opp_dreb, opp_stl, opp_blk,
         opp_tov, opp_pf, opp_fga, opp_fgm, opp_fg_pct, opp_fg3a, opp_fg3m, opp_fg3_pct, opp_fta, opp_ftm, opp_ft_pct, opp_pm, opp_pts_paint, opp_pts_2nd_chance, opp_pts_fb, opp_pts_off_tov,
@@ -115,6 +197,7 @@ def get_team_stats(con, team, season_type):
         GROUP BY Season))"""
     dataframe = pd.read_sql_query(query, con, index_col="Season")
     return dataframe
+
 
 ############################################################################################################################################
 # Functions to Calculate Team Stats like Offensive/Defensive Rating and Assist Ratio
@@ -285,21 +368,19 @@ Playoffs_Dict = {}
 League_Dict = {}
 
 for i in teams:
-    Regular_Season_Dict[i] = get_team_stats(con, teams[i], '\'Regular Season\'')
-for i in teams:
-    Preseason_Dict[i] = get_team_stats(con, teams[i], '\'Pre Season\'')
-for i in teams:
-    Playoffs_Dict[i] = get_team_stats(con, teams[i], '\'Playoffs\'')
+    Regular_Season_Dict[i] = get_team_stats(con, teams[i], i, '\'Regular Season\'', 'reg')
 
-League_Dict['Regular Season'] = get_league_stats(con,'\'Regular Season\'')
-League_Dict['Pre Season'] = get_league_stats(con,'\'Pre Season\'')
-League_Dict['Playoffs'] = get_league_stats(con,'\'Playoffs\'')
+League_Dict['Regular Season'] = get_league_stats(con,'\'Regular Season\'', 'reg')
 
-for i in teams:
-    Regular_Season_Dict[i].to_csv(f"csv/{i}_Regular_Season.csv")
-    Preseason_Dict[i].to_csv(f"csv/{i}_Preseason.csv")
-    Playoffs_Dict[i].to_csv(f"csv/{i}_Playoffs.csv")
+team_abbs=['ATL','BOS','BKN','CHA','CHI','CLE', 'DAL', 'DEN','DET','GSW','HOU', 'IND','LAL', 'LAC', 'MEM', 'MIA', 'MIL', 'MIN','NOP',
+           'NYK','OKC', 'ORL','PHI','PHX','POR','SAC','SAS','TOR','UTA','WAS']
 
-League_Dict['Regular Season'].to_csv(f"csv/League_Regular_Season.csv")
-League_Dict['Pre Season'].to_csv(f"csv/League_Preseason.csv")
-League_Dict['Playoffs'].to_csv(f"csv/League_Playoffs.csv")
+to_concat = []
+for i in team_abbs:
+    to_concat.append(Regular_Season_Dict[i])
+to_concat.append(League_Dict['Regular Season'])
+
+megaDF = pd.concat(to_concat, axis=1)
+
+megaDF = pd.concat(to_concat, axis=1)
+megaDF.to_csv("NBAOverview1996-2022.csv")
