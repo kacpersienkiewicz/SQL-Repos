@@ -17,7 +17,6 @@ I also don't use any of these functions however I keep them around with sources 
 
 import sqlite3 as sql
 import pandas as pd
-import numpy as np
 con = sql.connect("Data/nba.sqlite")
 cur = con.cursor()
 
