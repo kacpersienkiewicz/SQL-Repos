@@ -19,3 +19,4 @@ The NBA has a [page about advanced statistics](https://www.nba.com/stats/teams/a
 For Tableau, all data needs to be a in a single file, but for a database, it can be divided up so each team (and the league itself) gets its own table.
 
 # Conclusion
+The [Tableau dashboard](https://public.tableau.com/app/profile/kacper.sienkiewicz/viz/NBATeamComparison_17764643705190/Overview) was created, and although it is a bit sluggish it was a success. 
