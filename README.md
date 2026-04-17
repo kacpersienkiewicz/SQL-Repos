@@ -13,7 +13,9 @@ This uses the same dataset as the NBA Dataset Analysis, but is meant to just be 
 This analysis is meant to look at how team statistics, like total points and rebounds, changed over time. Additionally, I wanted to look at how a draft prospect's position, weight and height changed. Basically, I will look at a player's weight, height and position during the draft and compare it to the same things in the current season. Most of the second half of the project is dedicated to looking at the height/weight distribution of the different positions.
 
 ### Part Two
-After the initial analysis, the plan is to create a dashboard based on some findings about the NBA after analyzing players, teams, and the general initial analysis. This will also include creating functions to find statistics such as PER.
+After the initial analysis, several SQL queries were ran to get the general statistics (as well as some advanced statistics) for each team. This data was put into a single csv file for Tableau and then used to create a dashboard where an overview of the team as well as their defense and offense can be viewed.
+
+[Tableau Dashboard](https://public.tableau.com/app/profile/kacper.sienkiewicz/viz/NBATeamComparison_17764643705190/Overview)
 
 ## Mental Health in Tech Abstract
 
